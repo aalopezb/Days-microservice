@@ -46,12 +46,6 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/microservice-seconds:latest
 
-      - name: Build and push web-page
-        uses: docker/build-push-action@v2
-        with:
-          context: ./web-page
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/web-page:latest
 
       - name: Deploy to Docker Compose
         run: |
