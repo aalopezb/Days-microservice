@@ -1,0 +1,59 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: aalopezb
+          password: Github.2024
+
+      - name: Build and push microservice-hours
+        uses: docker/build-push-action@v2
+        with:
+          context: ./microservice-hours
+          push: true
+          tags: aalopezb/microservice-hours:latest
+
+      - name: Build and push microservice-minutes
+        uses: docker/build-push-action@v2
+        with:
+          context: ./microservice-minutes
+          push: true
+          tags: aalopezb/microservice-minutes:latest
+
+      - name: Build and push microservice-seconds
+        uses: docker/build-push-action@v2
+        with:
+          context: ./microservice-seconds
+          push: true
+          tags: aalopezb/microservice-seconds:latest
+
+      - name: Build and push web-page
+        uses: docker/build-push-action@v2
+        with:
+          context: ./web-page
+          push: true
+          tags: aalopezb/web-page:latest
+
+      - name: Deploy to Docker Compose
+        run: |
+          docker-compose down
+          docker-compose up -d

@@ -1,0 +1,25 @@
+version: '3'
+services:
+  microservice-hours:
+    build: ./microservice-hours
+    ports:
+      - "4001:4001"
+
+  microservice-minutes:
+    build: ./microservice-minutes
+    ports:
+      - "4002:4002"
+
+  microservice-seconds:
+    build: ./microservice-seconds
+    ports:
+      - "4003:4003"
+
+  web-page:
+    build: ./web-page
+    ports:
+      - "4000:4000"
+    depends_on:
+      - microservice-hours
+      - microservice-minutes
+      - microservice-seconds
