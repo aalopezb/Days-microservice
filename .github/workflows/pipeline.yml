@@ -46,8 +46,49 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/microservice-seconds:latest
 
+      - name: Build and push web-page
+        uses: docker/build-push-action@v2
+        with:
+          context: ./web-page
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/web-page:latest
 
       - name: Deploy to Docker Compose
         run: |
           docker-compose down
           docker-compose up -d
+
+  deploy-AWS:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set permissions for private key
+        run: |
+          echo "${{ secrets.AWS_PRIVATE_KEY }}" > key.pem
+          chmod 600 key.pem
+
+      - name: Stop running containers
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker stop microservice-minutes || true'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker rm microservice-minutes || true'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker stop microservice-hours || true'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker rm microservice-hours || true'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker stop microservice-seconds || true'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker rm microservice-seconds || true'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker stop web-page || true'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker rm web-page || true'
+
+      - name: Pull Docker images
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-hours:latest'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-minutes:latest'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-seconds:latest'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker pull ${{ secrets.DOCKER_USERNAME }}/web-page:latest'
+
+      - name: Run new containers
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker run -d --name microservice-hours -p 4001:4001 ${{ secrets.DOCKER_USERNAME }}/microservice-hours:latest'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker run -d --name microservice-minutes -p 4002:4002 ${{ secrets.DOCKER_USERNAME }}/microservice-minutes:latest'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker run -d --name microservice-seconds -p 4003:4003 ${{ secrets.DOCKER_USERNAME }}/microservice-seconds:latest'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker run -d --name web-page -p 4000:4000 ${{ secrets.DOCKER_USERNAME }}/web-page:latest'
