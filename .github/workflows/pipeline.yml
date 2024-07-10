@@ -78,7 +78,7 @@ jobs:
 
       - name: Run new containers
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker run -d --name microservice-hours -p 4001:4001 ${{ secrets.DOCKER_USERNAME }}/microservice-hours:latest'
-          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker run -d --name microservice-minutes -p 4002:4002 ${{ secrets.DOCKER_USERNAME }}/microservice-minutes:latest'
-          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker run -d --name microservice-seconds -p 4003:4003 ${{ secrets.DOCKER_USERNAME }}/microservice-seconds:latest'
-          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker run -d --name web-page -p 4000:4000 ${{ secrets.DOCKER_USERNAME }}/web-page:latest'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker run -d --name microservice-hours -p 4001:4001 ${{ secrets.DOCKER_USERNAME }}/days:microservice-hours'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker run -d --name microservice-minutes -p 4002:4002 ${{ secrets.DOCKER_USERNAME }}/days:microservice-minutes'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker run -d --name microservice-seconds -p 4003:4003 ${{ secrets.DOCKER_USERNAME }}/days:microservice-seconds'
+          ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} 'sudo docker run -d --name web-page -p 4000:4000 ${{ secrets.DOCKER_USERNAME }}/days:web-page'
